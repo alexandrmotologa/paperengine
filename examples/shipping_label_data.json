@@ -1,0 +1,16 @@
+{
+  "shipment": {
+    "trackingNumber": "1Z9999999999999999",
+    "weight": "2.4 kg",
+    "serviceClass": "Next Day Air Guaranteed",
+    "manifestUrl": "https://carrier.example/shipment/1Z9999999999999999"
+  },
+  "recipient": {
+    "name": "Alexandr Motologa",
+    "street": "100 Market St, Floor 14",
+    "city": "San Francisco",
+    "state": "CA",
+    "zip": "94105",
+    "country": "United States"
+  }
+}
