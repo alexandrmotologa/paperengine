@@ -14,6 +14,7 @@ public class Document {
     private ContainerElement body = new ContainerElement();
     private HeaderFooter header;
     private HeaderFooter footer;
+    private Watermark watermark;
 
     public Document() {
     }
@@ -73,6 +74,14 @@ public class Document {
 
     public void setFooter(HeaderFooter footer) {
         this.footer = footer;
+    }
+
+    public Watermark getWatermark() {
+        return watermark;
+    }
+
+    public void setWatermark(Watermark watermark) {
+        this.watermark = watermark;
     }
 
     public double getPrintableWidth() {

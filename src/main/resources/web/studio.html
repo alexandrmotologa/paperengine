@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PaperEngine Studio — Live Document Sandbox</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #090d16;
+      --bg-panel: #0f172a;
+      --bg-editor: #0a0f1d;
+      --border-color: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-cyan: #06b6d4;
+      --accent-cyan-hover: #0891b2;
+      --accent-blue: #3b82f6;
+      --success: #10b981;
+      --paper-bg: #ffffff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Header */
+    header {
+      height: 56px;
+      background: var(--bg-panel);
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      z-index: 10;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand svg {
+      width: 28px;
+      height: 28px;
+      filter: drop-shadow(0 0 8px rgba(6, 182, 212, 0.5));
+    }
+
+    .brand span {
+      background: linear-gradient(135deg, #ffffff 40%, var(--accent-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .select-wrapper select, button {
+      background: #1e293b;
+      color: var(--text-main);
+      border: 1px solid #334155;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      outline: none;
+    }
+
+    .select-wrapper select:hover, button:hover {
+      background: #334155;
+      border-color: #475569;
+    }
+
+    button.btn-primary {
+      background: var(--accent-cyan);
+      color: #042f2e;
+      border: none;
+      font-weight: 600;
+    }
+
+    button.btn-primary:hover {
+      background: #22d3ee;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      background: rgba(15, 23, 42, 0.6);
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 6px var(--success);
+    }
+
+    /* Main Workspace */
+    .workspace {
+      display: flex;
+      flex: 1;
+      height: calc(100vh - 56px);
+      overflow: hidden;
+    }
+
+    /* Editor Pane */
+    .editor-pane {
+      width: 48%;
+      min-width: 380px;
+      background: var(--bg-editor);
+      border-right: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .editor-tabs {
+      height: 40px;
+      background: var(--bg-panel);
+      display: flex;
+      border-bottom: 1px solid var(--border-color);
+      padding: 0 8px;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      border-radius: 6px 6px 0 0;
+      padding: 8px 16px;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+    }
+
+    .tab-btn.active {
+      color: var(--text-main);
+      background: var(--bg-editor);
+      border-bottom: 2px solid var(--accent-cyan);
+      font-weight: 600;
+    }
+
+    .editor-content {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    textarea.code-editor {
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      color: #e2e8f0;
+      font-family: 'Fira Code', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      border: none;
+      padding: 16px;
+      resize: none;
+      outline: none;
+      white-space: pre;
+      tab-size: 2;
+    }
+
+    /* Preview Pane */
+    .preview-pane {
+      flex: 1;
+      background: #060913;
+      position: relative;
+      overflow: auto;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px;
+    }
+
+    .preview-stage {
+      transition: transform 0.15s ease;
+      transform-origin: top center;
+    }
+
+    .paper-card {
+      background: var(--paper-bg);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05);
+      border-radius: 4px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .paper-card svg {
+      display: block;
+      max-width: 100%;
+      height: auto;
+    }
+
+    .preview-toolbar {
+      position: absolute;
+      bottom: 24px;
+      right: 24px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 4px 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 10;
+    }
+
+    .preview-toolbar button {
+      background: transparent;
+      border: none;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+    }
+
+    .preview-toolbar button:hover {
+      background: #1e293b;
+    }
+
+    .zoom-level {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      min-width: 44px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="brand">
+      <svg viewBox="0 0 32 32" fill="none">
+        <polygon points="16,2 30,16 16,30 2,16" stroke="#06b6d4" stroke-width="2" fill="rgba(6, 182, 212, 0.15)" />
+        <polygon points="16,2 24,16 16,22 8,16" stroke="#38bdf8" stroke-width="1.5" fill="rgba(56, 189, 248, 0.25)" />
+        <line x1="16" y1="2" x2="16" y2="30" stroke="#06b6d4" stroke-width="1.5" />
+      </svg>
+      <span>PaperEngine Studio</span>
+    </div>
+
+    <div class="controls">
+      <div class="select-wrapper">
+        <select id="presetSelect">
+          <option value="financial-report">Financial Report (Charts + Metrics)</option>
+          <option value="invoice">Commercial Invoice (Watermark + QR)</option>
+          <option value="shipping-label">Shipping Label (Barcodes)</option>
+          <option value="certificate">Certificate of Mastery</option>
+        </select>
+      </div>
+
+      <div class="select-wrapper">
+        <select id="formatSelect">
+          <option value="svg" selected>SVG Vector (Instant)</option>
+          <option value="pdf">PDF Binary</option>
+        </select>
+      </div>
+
+      <button id="downloadBtn" class="btn-primary">Download File</button>
+
+      <div class="status-badge">
+        <div class="status-dot"></div>
+        <span id="latencyLabel">Ready</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="workspace">
+    <!-- Left Editor Pane -->
+    <div class="editor-pane">
+      <div class="editor-tabs">
+        <button id="tabTemplate" class="tab-btn active">Template (Markdown + CSS)</button>
+        <button id="tabData" class="tab-btn">Data (JSON)</button>
+      </div>
+      <div class="editor-content">
+        <textarea id="templateEditor" class="code-editor" spellcheck="false"></textarea>
+        <textarea id="dataEditor" class="code-editor" style="display: none;" spellcheck="false"></textarea>
+      </div>
+    </div>
+
+    <!-- Right Preview Pane -->
+    <div class="preview-pane">
+      <div id="previewStage" class="preview-stage">
+        <div id="paperCard" class="paper-card">
+          <!-- Rendered Document View -->
+        </div>
+      </div>
+
+      <div class="preview-toolbar">
+        <button id="zoomOutBtn">-</button>
+        <span id="zoomLevel" class="zoom-level">100%</span>
+        <button id="zoomInBtn">+</button>
+        <button id="zoomFitBtn">Fit</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const presets = {
+      "financial-report": {
+        template: `<style>
+@page {
+  size: A4;
+  margin: 36pt;
+}
+</style>
+
+# Q3 2026 Executive Financial Report
+PaperEngine High-Performance Software Corp.
+
+---
+
+### Quarterly Revenue Performance ($M)
+[chart:bar labels="Q1,Q2,Q3,Q4" values="18.5,24.2,31.8,42.0" width="380pt" height="130pt" title="Fiscal Year Revenue Growth"]
+
+### Category Revenue Distribution
+[chart:donut labels="Enterprise SaaS,Support,Consulting" values="65,22,13" size="140pt" title="Revenue Share"]
+
+### Key Operating Metrics
+
+| Metric | Current Period | Target | Trend |
+|---|---|---|---|
+| Annual Recurring Revenue | $116.5M | $105.0M | Exceeded |
+| Gross Margin % | 88.4% | 85.0% | Exceeded |
+| Net Retention Rate | 128% | 120% | Exceeded |
+| Latency P50 | 2.89 ms | < 10 ms | Passed |
+
+[chart:sparkline values="12,18,15,22,28,31,42" width="160pt" height="24pt"]
+
+Confidential - For Internal Board Review Only.`,
+        data: `{}`
+      },
+      "invoice": {
+        template: `<style>
+@page {
+  size: A4;
+  margin: 36pt;
+  watermark: "PAID";
+  watermark-color: rgba(16, 185, 129, 0.12);
+  watermark-angle: 35deg;
+  watermark-font-size: 80pt;
+}
+</style>
+
+# INVOICE #{{ invoice.number }}
+Date: {{ invoice.date }} | Due: {{ invoice.dueDate }}
+
+---
+
+### Billed To:
+{{ customer.name }}
+{{ customer.address }}
+Tax ID: {{ customer.vatId }}
+
+| Description | Qty | Unit Price | Total |
+|---|---|---|---|
+| Enterprise Platform License (Annual) | 1 | $12,500.00 | $12,500.00 |
+| Dedicated Solution Engineering (40 hrs) | 40 | $185.00 | $7,400.00 |
+| 24/7 SLA Priority Production Support | 12 | $650.00 | $7,800.00 |
+
+---
+
+### Total Due: {{ invoice.totalAmount }}
+Scan QR Code to pay via Instant Corporate Wire:
+
+[barcode:qr content="https://pay.acme.example/inv/{{ invoice.number }}" size="90pt"]`,
+        data: JSON.stringify({
+          invoice: {
+            number: "INV-2026-8942",
+            date: "September 11, 2026",
+            dueDate: "October 11, 2026",
+            totalAmount: "$27,700.00"
+          },
+          customer: {
+            name: "Acme Technologies Global Corp.",
+            address: "100 Montgomery St, Suite 1800, San Francisco, CA 94104",
+            vatId: "US-942817263"
+          }
+        }, null, 2)
+      },
+      "shipping-label": {
+        template: `<style>
+@page {
+  size: A5;
+  margin: 20pt;
+}
+</style>
+
+# PRIORITY EXPRESS 2-DAY
+Tracking: {{ shipment.trackingNumber }}
+
+---
+
+### SHIP TO:
+{{ recipient.name }}
+{{ recipient.address1 }}
+{{ recipient.city }}, {{ recipient.state }} {{ recipient.zip }}
+Phone: {{ recipient.phone }}
+
+---
+
+[barcode:code128 content="{{ shipment.trackingNumber }}" width="320pt" height="48pt"]
+
+| Service | Weight | Zone | Pkg ID |
+|---|---|---|---|
+| Air Express | {{ shipment.weight }} | 4B | #{{ shipment.packageId }} |
+
+[barcode:qr content="https://track.logistics.example/{{ shipment.trackingNumber }}" size="75pt"]`,
+        data: JSON.stringify({
+          shipment: {
+            trackingNumber: "1Z999AA10123456784",
+            weight: "4.8 lbs",
+            packageId: "PKG-88219"
+          },
+          recipient: {
+            name: "Sarah Connor",
+            address1: "742 Evergreen Terrace",
+            city: "Springfield",
+            state: "OR",
+            zip: "97477",
+            phone: "+1 (555) 019-2834"
+          }
+        }, null, 2)
+      },
+      "certificate": {
+        template: `<style>
+@page {
+  size: A4;
+  margin: 40pt;
+  watermark: "OFFICIAL";
+  watermark-color: rgba(2, 132, 199, 0.08);
+  watermark-angle: 45deg;
+  watermark-font-size: 70pt;
+}
+</style>
+
+# CERTIFICATE OF EXCELLENCE
+Presented by PaperEngine Academy of Engineering
+
+---
+
+This credential certifies that
+
+## {{ recipient.name }}
+
+has successfully mastered advanced high-performance document engineering, virtual threading concurrency, and sub-15ms vector synthesis.
+
+Course: {{ credential.courseTitle }}
+Issue Date: {{ credential.issueDate }}
+Certificate ID: {{ credential.id }}
+
+---
+
+[barcode:qr content="https://verify.academy.example/cert/{{ credential.id }}" size="80pt"]`,
+        data: JSON.stringify({
+          recipient: {
+            name: "Alex Motologa"
+          },
+          credential: {
+            courseTitle: "High-Speed Document Architecture & Vector Rendering",
+            issueDate: "September 11, 2026",
+            id: "CERT-2026-ENG-994"
+          }
+        }, null, 2)
+      }
+    };
+
+    const templateEditor = document.getElementById("templateEditor");
+    const dataEditor = document.getElementById("dataEditor");
+    const tabTemplate = document.getElementById("tabTemplate");
+    const tabData = document.getElementById("tabData");
+    const presetSelect = document.getElementById("presetSelect");
+    const formatSelect = document.getElementById("formatSelect");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const paperCard = document.getElementById("paperCard");
+    const previewStage = document.getElementById("previewStage");
+    const latencyLabel = document.getElementById("latencyLabel");
+
+    let currentZoom = 1.0;
+    let renderTimeout = null;
+    let lastRenderBlob = null;
+
+    // Load initial preset
+    function loadPreset(name) {
+      const p = presets[name] || presets["financial-report"];
+      templateEditor.value = p.template;
+      dataEditor.value = p.data;
+      triggerRender();
+    }
+
+    presetSelect.addEventListener("change", (e) => loadPreset(e.target.value));
+
+    // Tab switching
+    tabTemplate.addEventListener("click", () => {
+      tabTemplate.classList.add("active");
+      tabData.classList.remove("active");
+      templateEditor.style.display = "block";
+      dataEditor.style.display = "none";
+    });
+
+    tabData.addEventListener("click", () => {
+      tabData.classList.add("active");
+      tabTemplate.classList.remove("active");
+      dataEditor.style.display = "block";
+      templateEditor.style.display = "none";
+    });
+
+    // Debounced render
+    function triggerRender() {
+      clearTimeout(renderTimeout);
+      renderTimeout = setTimeout(doRender, 200);
+    }
+
+    templateEditor.addEventListener("input", triggerRender);
+    dataEditor.addEventListener("input", triggerRender);
+    formatSelect.addEventListener("change", triggerRender);
+
+    async function doRender() {
+      const template = templateEditor.value;
+      let data = {};
+      try {
+        data = JSON.parse(dataEditor.value || "{}");
+      } catch (err) {
+        latencyLabel.textContent = "JSON Error";
+        return;
+      }
+
+      const format = formatSelect.value;
+      const t0 = performance.now();
+
+      try {
+        const response = await fetch("/api/v1/render", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ template, data, format })
+        });
+
+        if (!response.ok) {
+          const errText = await response.text();
+          latencyLabel.textContent = "Render Error";
+          return;
+        }
+
+        const elapsed = (performance.now() - t0).toFixed(1);
+        latencyLabel.textContent = \`\${elapsed} ms\`;
+
+        if (format === "svg") {
+          const svgText = await response.text();
+          paperCard.innerHTML = svgText;
+          lastRenderBlob = new Blob([svgText], { type: "image/svg+xml" });
+        } else {
+          const blob = await response.blob();
+          lastRenderBlob = blob;
+          const url = URL.createObjectURL(blob);
+          paperCard.innerHTML = \`<iframe src="\${url}" style="width: 595px; height: 842px; border: none;"></iframe>\`;
+        }
+      } catch (e) {
+        latencyLabel.textContent = "Network Error";
+      }
+    }
+
+    // Download handler
+    downloadBtn.addEventListener("click", () => {
+      if (!lastRenderBlob) return;
+      const ext = formatSelect.value;
+      const url = URL.createObjectURL(lastRenderBlob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = \`document.\${ext}\`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+
+    // Zoom handlers
+    function applyZoom(z) {
+      currentZoom = Math.min(Math.max(z, 0.4), 2.5);
+      previewStage.style.transform = \`scale(\${currentZoom})\`;
+      document.getElementById("zoomLevel").textContent = \`\${Math.round(currentZoom * 100)}%\`;
+    }
+
+    document.getElementById("zoomInBtn").addEventListener("click", () => applyZoom(currentZoom + 0.1));
+    document.getElementById("zoomOutBtn").addEventListener("click", () => applyZoom(currentZoom - 0.1));
+    document.getElementById("zoomFitBtn").addEventListener("click", () => applyZoom(1.0));
+
+    // Initialize
+    loadPreset("financial-report");
+  </script>
+</body>
+</html>

@@ -7,8 +7,10 @@ import com.engine.paper.domain.model.Color;
 import com.engine.paper.domain.model.Document;
 import com.engine.paper.domain.model.Margin;
 import com.engine.paper.domain.model.PageSize;
+import com.engine.paper.domain.model.Watermark;
 import com.engine.paper.domain.style.BorderStyle;
 import com.engine.paper.domain.style.ElementStyle;
+import com.engine.paper.domain.style.FontRegistry;
 import com.engine.paper.domain.style.TextStyle;
 
 import java.util.*;
@@ -22,6 +24,8 @@ public class MarkdownTemplateParser {
 
     private static final Pattern STYLE_BLOCK_PATTERN = Pattern.compile("<style>(.*?)</style>", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
     private static final Pattern BARCODE_PATTERN = Pattern.compile("\\[barcode:(\\w+)\\s+content=[\"'](.*?)[\"'](?:\\s+size=[\"'](.*?)[\"'])?(?:\\s+width=[\"'](.*?)[\"'])?(?:\\s+height=[\"'](.*?)[\"'])?\\s*]");
+    private static final Pattern CHART_PATTERN = Pattern.compile("\\[chart:(\\w+)(.*?)\\]", Pattern.CASE_INSENSITIVE);
+    private static final Pattern ATTR_PATTERN = Pattern.compile("([\\w-]+)=[\"'](.*?)[\"']");
     private static final Pattern CSS_RULE_PATTERN = Pattern.compile("([@.#\\w-]+)\\s*\\{([^}]+)}");
 
     public Document parse(String markdown) {
@@ -86,6 +90,17 @@ public class MarkdownTemplateParser {
                         : BarcodeElement.BarcodeType.QR_CODE;
 
                 document.addElement(new BarcodeElement(bType, payload, w, h));
+                i++;
+                continue;
+            }
+
+            // Chart Tag: [chart:bar labels="..." values="..." width="..." height="..."]
+            Matcher chartMatcher = CHART_PATTERN.matcher(line);
+            if (chartMatcher.matches()) {
+                ChartElement chart = parseChartTag(chartMatcher.group(1), chartMatcher.group(2));
+                if (chart != null) {
+                    document.addElement(chart);
+                }
                 i++;
                 continue;
             }
@@ -160,6 +175,18 @@ public class MarkdownTemplateParser {
 
             if (selector.equalsIgnoreCase("@page")) {
                 applyPageProperties(properties, document);
+            } else if (selector.equalsIgnoreCase("@font-face")) {
+                String family = properties.get("font-family");
+                String src = properties.get("src");
+                if (family != null && src != null) {
+                    family = family.replace("\"", "").replace("'", "").trim();
+                    Matcher m = Pattern.compile("url\\([\"']?(.*?)[\"']?\\)").matcher(src);
+                    String path = m.find() ? m.group(1).trim() : src.trim();
+                    try {
+                        FontRegistry.getDefault().registerFont(family, path);
+                    } catch (Exception ignored) {
+                    }
+                }
             }
         }
     }
@@ -179,6 +206,27 @@ public class MarkdownTemplateParser {
         if (properties.containsKey("margin")) {
             double m = parseDimension(properties.get("margin"), 36.0);
             document.setMargin(Margin.all(m));
+        }
+
+        if (properties.containsKey("watermark")) {
+            String text = properties.get("watermark").replace("\"", "").replace("'", "").trim();
+            Watermark wm = document.getWatermark() != null ? document.getWatermark() : new Watermark(text);
+            wm.setText(text);
+            if (properties.containsKey("watermark-color")) {
+                wm.setColor(Color.parse(properties.get("watermark-color")));
+            }
+            if (properties.containsKey("watermark-angle")) {
+                String ang = properties.get("watermark-angle").replace("deg", "").trim();
+                try {
+                    wm.setAngle(Double.parseDouble(ang));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+            if (properties.containsKey("watermark-font-size") || properties.containsKey("watermark-size")) {
+                String fs = properties.getOrDefault("watermark-font-size", properties.get("watermark-size"));
+                wm.setFontSize(parseDimension(fs, 64.0));
+            }
+            document.setWatermark(wm);
         }
     }
 
@@ -228,6 +276,76 @@ public class MarkdownTemplateParser {
             }
         }
         return row;
+    }
+
+    private ChartElement parseChartTag(String typeStr, String attrStr) {
+        Map<String, String> attrs = new HashMap<>();
+        if (attrStr != null) {
+            Matcher am = ATTR_PATTERN.matcher(attrStr);
+            while (am.find()) {
+                attrs.put(am.group(1).toLowerCase(), am.group(2));
+            }
+        }
+
+        ChartElement.ChartType type = switch (typeStr.toUpperCase()) {
+            case "LINE" -> ChartElement.ChartType.LINE;
+            case "SPARKLINE" -> ChartElement.ChartType.SPARKLINE;
+            case "DONUT" -> ChartElement.ChartType.DONUT;
+            case "PIE" -> ChartElement.ChartType.PIE;
+            default -> ChartElement.ChartType.BAR;
+        };
+
+        double defW = type == ChartElement.ChartType.SPARKLINE ? 120.0 : (type == ChartElement.ChartType.DONUT || type == ChartElement.ChartType.PIE ? 160.0 : 360.0);
+        double defH = type == ChartElement.ChartType.SPARKLINE ? 28.0 : (type == ChartElement.ChartType.DONUT || type == ChartElement.ChartType.PIE ? 160.0 : 140.0);
+
+        String wVal = attrs.get("width");
+        String hVal = attrs.get("height");
+        String sVal = attrs.get("size");
+
+        double w = parseDimension(wVal != null ? wVal : sVal, defW);
+        double h = parseDimension(hVal != null ? hVal : sVal, defH);
+
+        ChartElement chart = new ChartElement(type, w, h);
+        if (attrs.containsKey("title")) {
+            chart.setTitle(attrs.get("title"));
+        }
+
+        String valuesStr = attrs.getOrDefault("values", attrs.get("data"));
+        if (valuesStr != null && !valuesStr.isBlank()) {
+            String[] valParts = valuesStr.split("[,;]");
+            List<Double> vals = new ArrayList<>();
+            for (String v : valParts) {
+                try {
+                    vals.add(Double.parseDouble(v.trim()));
+                } catch (NumberFormatException ignored) {
+                }
+            }
+            List<String> labels = new ArrayList<>();
+            String labelsStr = attrs.get("labels");
+            if (labelsStr != null && !labelsStr.isBlank()) {
+                for (String l : labelsStr.split("[,;]")) {
+                    labels.add(l.trim());
+                }
+            }
+            chart.setData(labels, vals);
+        }
+
+        if (attrs.containsKey("palette")) {
+            String[] palParts = attrs.get("palette").split("[,;]");
+            List<Color> customPalette = new ArrayList<>();
+            for (String p : palParts) {
+                customPalette.add(Color.parse(p.trim()));
+            }
+            if (!customPalette.isEmpty()) {
+                chart.setPalette(customPalette);
+            }
+        }
+
+        if (type == ChartElement.ChartType.SPARKLINE) {
+            chart.setShowValues(false);
+        }
+
+        return chart;
     }
 
     private double parseDimension(String val, double defaultValue) {

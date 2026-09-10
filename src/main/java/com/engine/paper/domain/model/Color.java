@@ -27,6 +27,32 @@ public record Color(int red, int green, int blue, double alpha) {
         return new Color(r, g, b, a);
     }
 
+    public static Color parse(String str) {
+        if (str == null || str.isBlank()) {
+            return BLACK;
+        }
+        String s = str.trim();
+        if (s.startsWith("#") || (!s.startsWith("rgb") && !s.contains("("))) {
+            return parseHex(s);
+        }
+        if (s.toLowerCase().startsWith("rgba") || s.toLowerCase().startsWith("rgb")) {
+            try {
+                int open = s.indexOf('(');
+                int close = s.indexOf(')');
+                if (open > 0 && close > open) {
+                    String[] parts = s.substring(open + 1, close).split("[,/]");
+                    int r = Integer.parseInt(parts[0].trim());
+                    int g = Integer.parseInt(parts[1].trim());
+                    int b = Integer.parseInt(parts[2].trim());
+                    double a = parts.length > 3 ? Double.parseDouble(parts[3].trim()) : 1.0;
+                    return new Color(r, g, b, a);
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        return parseHex(s);
+    }
+
     public static Color parseHex(String hex) {
         if (hex == null || hex.isBlank()) {
             return BLACK;

@@ -1,26 +1,92 @@
 # PaperEngine Template Specification
 
-PaperEngine templates consist of standard Markdown elements, CSS declarations, and Mustache style variable expressions.
+PaperEngine templates consist of standard Markdown elements, CSS declarations, native chart directives, and variable expressions.
 
 ## Page Setup
 
-Document geometry is defined at the top of a template using YAML front matter or CSS `@page` rules:
+Document geometry and watermarks are defined using CSS `@page` rules or YAML front matter:
 
 ```markdown
----
-pageSize: A4
-orientation: portrait
-margin:
-  top: 36pt
-  right: 36pt
-  bottom: 36pt
-  left: 36pt
-headerHeight: 40pt
-footerHeight: 30pt
----
+<style>
+@page {
+  size: A4;
+  margin: 36pt;
+  watermark: "CONFIDENTIAL";
+  watermark-color: rgba(239, 68, 68, 0.15);
+  watermark-angle: 45deg;
+  watermark-font-size: 72pt;
+}
+</style>
 ```
 
-Standard supported page sizes include `A3`, `A4`, `A5`, `LETTER`, and `LEGAL`. Custom dimensions can be specified in points: `pageSize: 400pt 600pt`.
+Standard supported page sizes include `A3`, `A4`, `A5`, `LETTER`, and `LEGAL`.
+
+## Watermarks and Stamps
+
+Declarative watermarks are rendered diagonally across the center of all document pages:
+
+- `watermark`: Text string to display (e.g. `"PAID"`, `"DRAFT"`, `"CONFIDENTIAL"`).
+- `watermark-color`: RGBA or Hex color (e.g. `rgba(16, 185, 129, 0.15)`, `#ef4444`).
+- `watermark-angle`: Rotation angle in degrees (default `45deg`).
+- `watermark-font-size`: Point size of the watermark text (default `64pt`).
+
+## Custom Typography (@font-face)
+
+Custom TrueType (`.ttf`) and OpenType (`.otf`) fonts are registered via standard `@font-face` blocks:
+
+```css
+@font-face {
+  font-family: "Inter";
+  src: url("fonts/Inter-Regular.ttf");
+}
+```
+
+Registered fonts are automatically resolved and embedded via `PDType0Font` in the resulting PDF stream. If a font file is not found, PaperEngine falls back gracefully to standard Helvetica or Courier fonts.
+
+## Native Vector Charts
+
+PaperEngine generates vector charts without external charting libraries or image rasterization:
+
+### Bar Chart
+
+```markdown
+[chart:bar labels="Q1,Q2,Q3,Q4" values="18.5,24.2,31.8,42.0" width="380pt" height="130pt" title="Quarterly Growth ($M)"]
+```
+
+### Donut & Pie Charts
+
+```markdown
+[chart:donut labels="SaaS,Services,Support" values="65,22,13" size="140pt" title="Revenue Share"]
+[chart:pie labels="Direct,Partner,Online" values="40,35,25" size="140pt"]
+```
+
+### Sparkline Trendlines
+
+Compact inline trendlines suitable for KPI cards and table rows:
+
+```markdown
+[chart:sparkline values="10,25,18,32,45,60" width="140pt" height="24pt"]
+```
+
+### Chart Attributes
+
+- `title`: Header label rendered above the plot area.
+- `labels`: Comma-separated list of category names.
+- `values` or `data`: Comma-separated list of numeric data points.
+- `width`: Total bounding box width in points (`pt`) or pixels (`px`).
+- `height`: Total bounding box height.
+- `size`: Shorthand for square charts (e.g. donut/pie).
+- `palette`: Comma-separated list of Hex/RGB colors for custom bar/slice colors.
+
+## Barcodes and QR Codes
+
+Vector barcode markers:
+
+- QR Code: `[barcode:qr content="{{ payload }}" size="90pt"]`
+- Code 128: `[barcode:code128 content="{{ trackingNumber }}" width="200pt" height="50pt"]`
+- EAN-13: `[barcode:ean13 content="{{ barcodeValue }}" width="150pt" height="40pt"]`
+
+These tags emit native vector paths into the PDF stream rather than raster bitmaps, ensuring clear edges at any print magnification.
 
 ## Variable Interpolation
 
@@ -51,21 +117,9 @@ Status: Payment due upon receipt
 {{/each}}
 ```
 
-## Barcodes and QR Codes
-
-PaperEngine includes vector barcode markers:
-
-- QR Code: `[barcode:qr content="{{ payload }}" size="90pt"]`
-- Code 128: `[barcode:code128 content="{{ trackingNumber }}" width="200pt" height="50pt"]`
-- EAN-13: `[barcode:ean13 content="{{ barcodeValue }}" width="150pt" height="40pt"]`
-
-These tags emit native vector paths into the PDF stream rather than raster bitmaps, ensuring clear edges at any print magnification.
-
 ## CSS Flexbox Support
 
-Inline styles and scoped `<style>` blocks support a subset of CSS properties:
-
-### Supported Properties
+Scoped `<style>` blocks support flexbox styling:
 
 - `display`: `flex`, `block`, `inline`
 - `flex-direction`: `row`, `column`, `row-reverse`, `column-reverse`

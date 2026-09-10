@@ -1,6 +1,9 @@
 package com.engine.paper.infrastructure.cli;
 
 import com.engine.paper.domain.model.Document;
+import com.engine.paper.infrastructure.einvoice.PdfA3Packager;
+import com.engine.paper.infrastructure.merger.DocumentMerger;
+import com.engine.paper.infrastructure.scaffold.ScaffoldTemplates;
 import com.engine.paper.infrastructure.server.PaperEngineServer;
 import com.engine.paper.renderer.PdfRenderer;
 import com.engine.paper.renderer.SvgRenderer;
@@ -8,7 +11,9 @@ import com.engine.paper.template.TemplateCompiler;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.file.Files;
@@ -18,7 +23,7 @@ import java.util.List;
 import java.util.concurrent.*;
 
 /**
- * Command line runner for PaperEngine rendering, HTTP serving, and benchmarking.
+ * Command line runner for PaperEngine rendering, HTTP serving, scaffolding, merging, and benchmarking.
  */
 @Command(
         name = "paperengine",
@@ -28,6 +33,8 @@ import java.util.concurrent.*;
         subcommands = {
                 PaperEngineCli.RenderCommand.class,
                 PaperEngineCli.ServeCommand.class,
+                PaperEngineCli.InitCommand.class,
+                PaperEngineCli.MergeCommand.class,
                 PaperEngineCli.BenchmarkCommand.class
         }
 )
@@ -59,6 +66,12 @@ public class PaperEngineCli implements Callable<Integer> {
         @Option(names = {"-f", "--format"}, defaultValue = "pdf", description = "Target output format: pdf or svg (default: pdf)")
         private String format;
 
+        @Option(names = {"--attach-xml"}, description = "Path to structured XML file to embed for Factur-X / PDF/A-3")
+        private File attachXmlFile;
+
+        @Option(names = {"--profile"}, defaultValue = "EN_16931", description = "Factur-X profile (e.g. EN_16931, BASIC, EXTENDED)")
+        private String profile;
+
         @Override
         public Integer call() {
             try {
@@ -80,12 +93,22 @@ public class PaperEngineCli implements Callable<Integer> {
                     outputFile.getParentFile().mkdirs();
                 }
 
-                try (FileOutputStream fos = new FileOutputStream(outputFile)) {
-                    if ("svg".equalsIgnoreCase(format)) {
+                if ("svg".equalsIgnoreCase(format)) {
+                    try (FileOutputStream fos = new FileOutputStream(outputFile)) {
                         new SvgRenderer().render(document, fos);
-                    } else {
-                        new PdfRenderer().render(document, fos);
                     }
+                } else {
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    new PdfRenderer().render(document, baos);
+                    byte[] pdfBytes = baos.toByteArray();
+
+                    if (attachXmlFile != null && attachXmlFile.exists()) {
+                        byte[] xmlBytes = Files.readAllBytes(attachXmlFile.toPath());
+                        PdfA3Packager.InvoiceProfile invProfile = PdfA3Packager.InvoiceProfile.fromString(profile);
+                        pdfBytes = PdfA3Packager.packageFacturX(pdfBytes, xmlBytes, invProfile);
+                    }
+
+                    Files.write(outputFile.toPath(), pdfBytes);
                 }
 
                 double elapsedMs = (System.nanoTime() - start) / 1_000_000.0;
@@ -100,7 +123,60 @@ public class PaperEngineCli implements Callable<Integer> {
         }
     }
 
-    @Command(name = "serve", description = "Start the embedded virtual-threaded REST API server")
+    @Command(name = "init", description = "Scaffold a production-ready document template and mock JSON data")
+    public static class InitCommand implements Callable<Integer> {
+
+        @Parameters(index = "0", defaultValue = "invoice", description = "Template type: invoice, shipping-label, certificate, financial-report (default: invoice)")
+        private String type;
+
+        @Option(names = {"-d", "--dir"}, defaultValue = ".", description = "Target directory path for generated files (default: current directory)")
+        private File targetDir;
+
+        @Override
+        public Integer call() {
+            try {
+                ScaffoldTemplates.scaffoldToDirectory(type, targetDir);
+                ScaffoldTemplates.ScaffoldResult res = ScaffoldTemplates.get(type);
+                System.out.println("Scaffolded template: " + new File(targetDir, res.templateFileName()).getPath());
+                System.out.println("Scaffolded data file: " + new File(targetDir, res.dataFileName()).getPath());
+                System.out.println("\nTo render your document, run:");
+                System.out.printf("  paperengine render -t %s -d %s -o output.pdf%n",
+                        new File(targetDir, res.templateFileName()).getPath(),
+                        new File(targetDir, res.dataFileName()).getPath());
+                return 0;
+            } catch (Exception e) {
+                System.err.println("Failed to scaffold template: " + e.getMessage());
+                return 1;
+            }
+        }
+    }
+
+    @Command(name = "merge", description = "Merge multiple PDF files into a single unified document")
+    public static class MergeCommand implements Callable<Integer> {
+
+        @Parameters(arity = "1..*", description = "Input PDF file paths to merge in order")
+        private List<File> inputFiles;
+
+        @Option(names = {"-o", "--output"}, required = true, description = "Merged output PDF file path")
+        private File outputFile;
+
+        @Override
+        public Integer call() {
+            try {
+                long start = System.nanoTime();
+                DocumentMerger.mergeFiles(inputFiles, outputFile);
+                double elapsedMs = (System.nanoTime() - start) / 1_000_000.0;
+                System.out.printf("Successfully merged %d files into %s in %.2f ms (%d bytes)%n",
+                        inputFiles.size(), outputFile.getName(), elapsedMs, outputFile.length());
+                return 0;
+            } catch (Exception e) {
+                System.err.println("Merge failed: " + e.getMessage());
+                return 1;
+            }
+        }
+    }
+
+    @Command(name = "serve", description = "Start the embedded virtual-threaded REST API and Web Studio server")
     public static class ServeCommand implements Callable<Integer> {
 
         @Option(names = {"-p", "--port"}, defaultValue = "8080", description = "HTTP port to bind (default: 8080)")
@@ -112,6 +188,7 @@ public class PaperEngineCli implements Callable<Integer> {
                 PaperEngineServer server = new PaperEngineServer(port);
                 server.start();
 
+                System.out.printf("PaperEngine Studio is live at: http://localhost:%d/studio%n", port);
                 System.out.println("Press Ctrl+C to stop server.");
                 Thread.currentThread().join();
                 return 0;

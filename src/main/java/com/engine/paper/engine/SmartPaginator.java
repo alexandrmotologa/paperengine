@@ -49,6 +49,7 @@ public class SmartPaginator {
         layoutSolver.solve(document.getBody(), startX, pageContentStartY, availableWidth);
 
         Page currentPage = new Page(1, 1, pageSize, document.getMargin());
+        currentPage.setWatermark(document.getWatermark());
         pages.add(currentPage);
 
         double cursorY = pageContentStartY;
@@ -227,6 +228,7 @@ public class SmartPaginator {
     private Page createNewPage(List<Page> pages, PageSize pageSize, Document document) {
         int pageNum = pages.size() + 1;
         Page newPage = new Page(pageNum, pageNum, pageSize, document.getMargin());
+        newPage.setWatermark(document.getWatermark());
         pages.add(newPage);
         return newPage;
     }

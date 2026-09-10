@@ -22,4 +22,13 @@ public interface VectorRenderer {
         render(document, baos);
         return baos.toByteArray();
     }
+
+    default void renderToFile(Document document, java.io.File outputFile) throws IOException {
+        if (outputFile.getParentFile() != null) {
+            outputFile.getParentFile().mkdirs();
+        }
+        try (java.io.FileOutputStream fos = new java.io.FileOutputStream(outputFile)) {
+            render(document, fos);
+        }
+    }
 }

@@ -40,8 +40,10 @@ public class PaperEngineServer {
         server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
 
         server.createContext("/api/v1/render", this::handleRender);
+        server.createContext("/studio", this::handleStudio);
         server.createContext("/health", this::handleHealth);
         server.createContext("/metrics", this::handleMetrics);
+        server.createContext("/", this::handleRoot);
 
         server.start();
         System.out.println("PaperEngine server started on port " + port + " (Virtual Threads enabled)");
@@ -110,6 +112,34 @@ public class PaperEngineServer {
         String json = String.format("{\"usedMemoryMb\":%d,\"maxMemoryMb\":%d,\"availableProcessors\":%d}",
                 usedMemMb, maxMemMb, rt.availableProcessors());
         sendResponse(exchange, 200, json, "application/json");
+    }
+
+    private void handleStudio(HttpExchange exchange) throws IOException {
+        serveStudioHtml(exchange);
+    }
+
+    private void handleRoot(HttpExchange exchange) throws IOException {
+        String path = exchange.getRequestURI().getPath();
+        if ("/".equals(path) || "/index.html".equals(path)) {
+            serveStudioHtml(exchange);
+        } else {
+            sendResponse(exchange, 404, "Not Found", "text/plain");
+        }
+    }
+
+    private void serveStudioHtml(HttpExchange exchange) throws IOException {
+        try (InputStream is = getClass().getResourceAsStream("/web/studio.html")) {
+            if (is == null) {
+                sendResponse(exchange, 404, "Studio UI resource not found", "text/plain");
+                return;
+            }
+            byte[] htmlBytes = is.readAllBytes();
+            exchange.getResponseHeaders().set("Content-Type", "text/html; charset=UTF-8");
+            exchange.sendResponseHeaders(200, htmlBytes.length);
+            try (OutputStream os = exchange.getResponseBody()) {
+                os.write(htmlBytes);
+            }
+        }
     }
 
     private void sendResponse(HttpExchange exchange, int statusCode, String response, String contentType) throws IOException {

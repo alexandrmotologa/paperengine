@@ -110,4 +110,35 @@ public class PaperEngineServerTest {
         assertThat(response.body()).contains("<svg");
         assertThat(response.body()).contains("Vector SVG Document");
     }
+
+    @Test
+    @DisplayName("GET /studio returns 200 OK with PaperEngine Web Studio HTML")
+    void studioEndpointCheck() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + PORT + "/studio"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.headers().firstValue("Content-Type").orElse("")).contains("text/html");
+        assertThat(response.body()).contains("PaperEngine Studio");
+        assertThat(response.body()).contains("code-editor");
+    }
+
+    @Test
+    @DisplayName("GET / root returns 200 OK serving Web Studio")
+    void rootEndpointCheck() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + PORT + "/"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.headers().firstValue("Content-Type").orElse("")).contains("text/html");
+        assertThat(response.body()).contains("PaperEngine Studio");
+    }
 }

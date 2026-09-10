@@ -17,6 +17,7 @@ public class Page {
     private final List<DocumentElement> elements = new ArrayList<>();
     private HeaderFooter header;
     private HeaderFooter footer;
+    private Watermark watermark;
 
     public Page(int pageNumber, int totalPages, PageSize pageSize, Margin margin) {
         this.pageNumber = pageNumber;
@@ -70,6 +71,14 @@ public class Page {
 
     public void setFooter(HeaderFooter footer) {
         this.footer = footer;
+    }
+
+    public Watermark getWatermark() {
+        return watermark;
+    }
+
+    public void setWatermark(Watermark watermark) {
+        this.watermark = watermark;
     }
 
     public double getAvailableWidth() {
