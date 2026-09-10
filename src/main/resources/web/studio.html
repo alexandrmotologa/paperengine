@@ -575,7 +575,7 @@ Certificate ID: {{ credential.id }}
         }
 
         const elapsed = (performance.now() - t0).toFixed(1);
-        latencyLabel.textContent = \`\${elapsed} ms\`;
+        latencyLabel.textContent = elapsed + " ms";
 
         if (format === "svg") {
           const svgText = await response.text();
@@ -585,7 +585,7 @@ Certificate ID: {{ credential.id }}
           const blob = await response.blob();
           lastRenderBlob = blob;
           const url = URL.createObjectURL(blob);
-          paperCard.innerHTML = \`<iframe src="\${url}" style="width: 595px; height: 842px; border: none;"></iframe>\`;
+          paperCard.innerHTML = '<iframe src="' + url + '" style="width: 595px; height: 842px; border: none;"></iframe>';
         }
       } catch (e) {
         latencyLabel.textContent = "Network Error";
@@ -599,7 +599,7 @@ Certificate ID: {{ credential.id }}
       const url = URL.createObjectURL(lastRenderBlob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = \`document.\${ext}\`;
+      a.download = "document." + ext;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -609,8 +609,8 @@ Certificate ID: {{ credential.id }}
     // Zoom handlers
     function applyZoom(z) {
       currentZoom = Math.min(Math.max(z, 0.4), 2.5);
-      previewStage.style.transform = \`scale(\${currentZoom})\`;
-      document.getElementById("zoomLevel").textContent = \`\${Math.round(currentZoom * 100)}%\`;
+      previewStage.style.transform = "scale(" + currentZoom + ")";
+      document.getElementById("zoomLevel").textContent = Math.round(currentZoom * 100) + "%";
     }
 
     document.getElementById("zoomInBtn").addEventListener("click", () => applyZoom(currentZoom + 0.1));

@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" width="1200" height="360">
+  <defs>
+    <!-- Background Gradients -->
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#060913"/>
+      <stop offset="50%" stop-color="#0b1329"/>
+      <stop offset="100%" stop-color="#050811"/>
+    </linearGradient>
+
+    <linearGradient id="title-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="60%" stop-color="#f0fdf4"/>
+      <stop offset="100%" stop-color="#00f5ff"/>
+    </linearGradient>
+
+    <linearGradient id="cyan-glow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f5ff"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+
+    <linearGradient id="facet-slate-light" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#475569"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+
+    <linearGradient id="facet-slate-mid" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+
+    <linearGradient id="facet-slate-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+
+    <linearGradient id="facet-obsidian" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#090d16"/>
+    </linearGradient>
+
+    <!-- Blueprint Grid Pattern -->
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" stroke-width="0.75" opacity="0.4"/>
+    </pattern>
+
+    <filter id="badge-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000000" flood-opacity="0.4"/>
+      <feDropShadow dx="0" dy="0" stdDeviation="24" flood-color="#00f5ff" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- Background Panel -->
+  <rect width="1200" height="360" fill="url(#bg-grad)"/>
+  <rect width="1200" height="360" fill="url(#grid)"/>
+
+  <!-- Subtle Ambient Glow Rings -->
+  <circle cx="180" cy="180" r="220" fill="none" stroke="#00f5ff" stroke-width="1" opacity="0.08" />
+  <circle cx="180" cy="180" r="170" fill="none" stroke="#0284c7" stroke-width="1" opacity="0.12" stroke-dasharray="6, 8" />
+  <circle cx="1100" cy="80" r="140" fill="none" stroke="#00f5ff" stroke-width="1" opacity="0.05" />
+
+  <!-- LEFT: Brand Mascot Squircle Badge (Scaled 0.26 from 1024x1024) -->
+  <g transform="translate(48, 48)" filter="url(#badge-shadow)">
+    <!-- White Luxury Squircle Container -->
+    <rect width="264" height="264" rx="60" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" />
+
+    <!-- Scaled Origami Crane & Hexagon -->
+    <g transform="translate(132, 132) scale(0.258)">
+      <!-- Hexagonal Architectural Gateway -->
+      <polygon points="0,-390 338,-195 338,195 0,390 -338,195 -338,-195" fill="none" stroke="#0f172a" stroke-width="36" stroke-linejoin="round" />
+      <polygon points="0,-355 307,-177 307,177 0,355 -307,177 -307,-177" fill="none" stroke="#00f5ff" stroke-width="3.5" opacity="0.45" stroke-dasharray="14, 10" />
+
+      <!-- Origami Crane -->
+      <g stroke="#0f172a" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round">
+        <polygon points="0,70 -45,260 0,310" fill="url(#facet-slate-dark)" />
+        <polygon points="0,70 0,310 45,260" fill="url(#facet-obsidian)" />
+        <polygon points="0,-40 -270,-180 -120,-10" fill="url(#facet-slate-light)" />
+        <polygon points="-270,-180 -300,-100 -120,-10" fill="url(#facet-slate-mid)" />
+        <polygon points="-300,-100 -210,50 -120,-10" fill="url(#facet-slate-dark)" />
+        <polygon points="0,-40 120,-10 270,-180" fill="url(#facet-slate-mid)" />
+        <polygon points="270,-180 120,-10 300,-100" fill="url(#facet-slate-dark)" />
+        <polygon points="300,-100 120,-10 210,50" fill="url(#facet-obsidian)" />
+        <polygon points="0,-40 -120,-10 -65,110 0,70" fill="url(#facet-slate-mid)" />
+        <polygon points="0,-40 0,70 65,110 120,-10" fill="url(#facet-slate-dark)" />
+        <polygon points="0,70 -65,110 0,210" fill="url(#facet-slate-dark)" />
+        <polygon points="0,70 0,210 65,110" fill="url(#facet-obsidian)" />
+        <polygon points="0,-40 -50,-120 0,-170" fill="url(#facet-slate-light)" />
+        <polygon points="0,-40 0,-170 50,-120" fill="url(#facet-slate-mid)" />
+        <polygon points="0,-170 -35,-230 0,-270" fill="url(#facet-slate-light)" />
+        <polygon points="0,-170 0,-270 35,-230" fill="url(#facet-slate-mid)" />
+        <polygon points="0,-270 -20,-290 0,-330" fill="#38bdf8" />
+        <polygon points="0,-270 0,-330 20,-290" fill="#0284c7" />
+        <polygon points="0,-330 -10,-355 0,-350" fill="#00f5ff" />
+        <polygon points="0,-330 0,-350 10,-355" fill="#0284c7" />
+      </g>
+      <line x1="0" y1="-350" x2="0" y2="310" stroke="#00f5ff" stroke-width="3" stroke-linecap="round" opacity="0.85" />
+      <circle cx="0" cy="-40" r="7" fill="#00f5ff" stroke="#0f172a" stroke-width="2" />
+      <circle cx="0" cy="-40" r="3" fill="#ffffff" />
+    </g>
+  </g>
+
+  <!-- RIGHT: Typography & Technical Features -->
+  <g transform="translate(360, 60)">
+    <!-- Engine Category Eyebrow -->
+    <text x="0" y="32" font-family="'Inter', -apple-system, system-ui, sans-serif" font-size="14" font-weight="700" letter-spacing="3" fill="#00f5ff">HIGH-SPEED DOCUMENT SYNTHESIS</text>
+
+    <!-- Main Product Title -->
+    <text x="0" y="98" font-family="'Inter', -apple-system, system-ui, sans-serif" font-size="64" font-weight="800" letter-spacing="-1.5" fill="url(#title-grad)">PaperEngine</text>
+
+    <!-- Tagline -->
+    <text x="0" y="142" font-family="'Inter', -apple-system, system-ui, sans-serif" font-size="20" font-weight="400" fill="#94a3b8">Chromium-Free Native Vector Document Engine for Java 21 LTS</text>
+
+    <!-- Feature Badges Row -->
+    <g transform="translate(0, 185)">
+      <!-- Badge 1: Sub-10ms -->
+      <rect x="0" y="0" width="136" height="34" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1.5" />
+      <circle cx="18" cy="17" r="4" fill="#10b981" />
+      <text x="32" y="22" font-family="'Inter', -apple-system, system-ui, sans-serif" font-size="13" font-weight="600" fill="#f8fafc">&lt; 10ms Latency</text>
+
+      <!-- Badge 2: Virtual Threads -->
+      <rect x="146" y="0" width="150" height="34" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1.5" />
+      <circle cx="164" cy="17" r="4" fill="#00f5ff" />
+      <text x="178" y="22" font-family="'Inter', -apple-system, system-ui, sans-serif" font-size="13" font-weight="600" fill="#f8fafc">Virtual Threads</text>
+
+      <!-- Badge 3: PDFBox Vectors -->
+      <rect x="306" y="0" width="155" height="34" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1.5" />
+      <circle cx="324" cy="17" r="4" fill="#38bdf8" />
+      <text x="338" y="22" font-family="'Inter', -apple-system, system-ui, sans-serif" font-size="13" font-weight="600" fill="#f8fafc">Native PDFBox 3.0</text>
+
+      <!-- Badge 4: PDF/A-3 Factur-X -->
+      <rect x="471" y="0" width="168" height="34" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1.5" />
+      <circle cx="489" cy="17" r="4" fill="#a855f7" />
+      <text x="503" y="22" font-family="'Inter', -apple-system, system-ui, sans-serif" font-size="13" font-weight="600" fill="#f8fafc">PDF/A-3 Factur-X</text>
+
+      <!-- Badge 5: Zero Chromium -->
+      <rect x="649" y="0" width="138" height="34" rx="8" fill="#0f172a" stroke="#1e293b" stroke-width="1.5" />
+      <circle cx="667" cy="17" r="4" fill="#f59e0b" />
+      <text x="681" y="22" font-family="'Inter', -apple-system, system-ui, sans-serif" font-size="13" font-weight="600" fill="#f8fafc">Zero Chromium</text>
+    </g>
+  </g>
+
+  <!-- Border Frame -->
+  <rect x="1" y="1" width="1198" height="358" rx="0" fill="none" stroke="#1e293b" stroke-width="1.5" />
+</svg>

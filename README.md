@@ -1,11 +1,5 @@
 <p align="center">
-  <img src="docs/images/logo.png?raw=true" alt="PaperEngine Logo" width="140" style="border-radius: 28px;" />
-</p>
-
-<h1 align="center">PaperEngine</h1>
-
-<p align="center">
-  <strong>Chromium-free high-speed PDF and vector document engine in Java 21 LTS</strong>
+  <img src="docs/images/banner.png?raw=true" alt="PaperEngine Header Banner" width="920" style="border-radius: 10px;" />
 </p>
 
 <p align="center">
@@ -49,14 +43,30 @@ JSON Data      ────>┌────────────▼───�
               PDF / PDF/A-3 (Factur-X)     Pure SVG
 ```
 
+## Live Preview Web Studio
+
+PaperEngine embeds a development studio served directly from the JAR over Java 21 Virtual Threads at `http://localhost:8080/studio`. The environment provides split-screen editing with debounced live preview, built-in enterprise presets, sub-millisecond latency tracking, zoom controls, and instant PDF/SVG downloads.
+
+<p align="center">
+  <img src="docs/images/studio_financial_report.png?raw=true" alt="PaperEngine Studio Live Preview - Financial Report with Vector Charts" width="920" style="border-radius: 8px; border: 1px solid #1e293b;" />
+</p>
+
+### Commercial Invoices, Watermarks, and Barcodes
+
+Documents support declarative CSS `@page` watermarks, PKCS#7 digital signatures, and vector barcodes (QR, Code 128) rendered directly into the PDFBox content stream without raster degradation:
+
+<p align="center">
+  <img src="docs/images/studio_invoice_watermark.png?raw=true" alt="PaperEngine Studio - Commercial Invoice with Watermark and QR Code" width="920" style="border-radius: 8px; border: 1px solid #1e293b;" />
+</p>
+
 ## Features
 
 - **Chromium-free vector rendering**: Generates documents through Apache PDFBox 3.0 without launching browser subprocesses.
 - **Native vector charting engine**: Renders Bar, Line, Sparkline, Donut, and Pie charts directly in PDF vector streams with zero image rasterization.
-- **Declarative watermarks & stamps**: Configured directly in `@page` CSS (e.g. `watermark: "CONFIDENTIAL"`, `watermark-color: rgba(239, 68, 68, 0.15)`), rotated with native PDF matrix transformations.
-- **Modern typography & TrueType font loading**: Custom `@font-face` support loading TrueType (`.ttf`) and OpenType (`.otf`) fonts via `FontRegistry` and `PDType0Font` with graceful standard font fallbacks.
-- **PDF/A-3 & Factur-X / ZUGFeRD e-invoicing compliance**: Embeds structured EN16931 XML into the PDF catalog (`/AF` array and `/EmbeddedFiles`) with ISO 19005-3 XMP conformance metadata.
-- **Document assembly & PDF merging**: Merges multiple external or generated PDFs into unified document packages via `DocumentMerger`.
+- **Declarative watermarks and stamps**: Configured directly in `@page` CSS (e.g. `watermark: "CONFIDENTIAL"`, `watermark-color: rgba(239, 68, 68, 0.15)`), rotated with native PDF matrix transformations.
+- **Modern typography and TrueType font loading**: Custom `@font-face` support loading TrueType (`.ttf`) and OpenType (`.otf`) fonts via `FontRegistry` and `PDType0Font` with graceful standard font fallbacks.
+- **PDF/A-3 and Factur-X / ZUGFeRD e-invoicing compliance**: Embeds structured EN16931 XML into the PDF catalog (`/AF` array and `/EmbeddedFiles`) with ISO 19005-3 XMP conformance metadata.
+- **Document assembly and PDF merging**: Merges multiple external or generated PDFs into unified document packages via `DocumentMerger`.
 - **CLI template scaffolding**: Instantly bootstraps production templates and mock JSON datasets via `paperengine init [invoice|shipping-label|certificate|financial-report]`.
 - **Live Preview Web Studio (`/studio`)**: Embedded single-page studio served directly from the JAR on Java 21 Virtual Threads with debounced live preview, presets, zoom, and instant download.
 - **CSS flexbox layout**: Supports flex directions (`row`, `column`), alignments (`justify-content`, `align-items`), margins, padding, and borders.
@@ -65,8 +75,8 @@ JSON Data      ────>┌────────────▼───�
   - Prevents orphan headers by checking that headers have text content following them on the same page.
   - Automatically repeats table header rows (`thead`) across page breaks.
   - Resolves dynamic headers and footers with accurate `Page X of Y` numbering.
-- **Vector barcodes & QR codes**: Draws ZXing barcode matrices directly as vector rectangles in the PDF stream, avoiding raster blur.
-- **PAdES & PKCS#7 digital signatures**: Signs PDF output using X.509 certificates and PKCS12 keystores via BouncyCastle.
+- **Vector barcodes and QR codes**: Draws ZXing barcode matrices directly as vector rectangles in the PDF stream, avoiding raster blur.
+- **PAdES and PKCS#7 digital signatures**: Signs PDF output using X.509 certificates and PKCS12 keystores via BouncyCastle.
 - **Virtual thread REST API**: Embedded HTTP server based on Java 21 virtual threads handles concurrent document generation with sub-millisecond dispatch.
 
 ## Quick Start
@@ -223,6 +233,18 @@ PaperEngine cleanly decouples layout calculation, domain logic, and output strea
 5. **Infrastructure & Web Studio** (`com.engine.paper.infrastructure`): Command-line runner (`PaperEngineCli`), scaffolding generator (`ScaffoldTemplates`), and Virtual-Threaded server serving the Live Preview Web Studio (`/studio`).
 
 See [ARCHITECTURE.md](docs/ARCHITECTURE.md) for full architectural documentation.
+
+## Brand Identity and Mascot
+
+PaperEngine uses the **Origami Crane** (*Japanese Orizuru*) as its official mascot mark. Just as origami transforms flat sheets of paper into structural three-dimensional forms through calculated geometric folds, PaperEngine compiles raw Markdown and JSON into dimensional vector documents without external browser runtimes.
+
+<p align="center">
+  <img src="docs/images/logo.png?raw=true" alt="PaperEngine Origami Crane Mascot Emblem" width="140" style="border-radius: 28px;" />
+</p>
+
+- **Metaphor**: Surgical folding of raw document schemas into structured vectors.
+- **Construction**: 1024x1024 luxury squircle container (`rx="220"`), obsidian hexagonal gateway frame (`#0f172a`), precision faceted shading (`#334155` to `#090d16`), and electric cyan alignment vectors (`#00f5ff`).
+- **Standard**: Follows procedural SVG vector standards with zero raster dependencies.
 
 ## License
 
