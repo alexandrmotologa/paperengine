@@ -48,6 +48,12 @@ JSON Data      ────>┌────────────▼───�
 PaperEngine embeds a development studio served directly from the JAR over Java 21 Virtual Threads at `http://localhost:8080/studio`. The environment provides split-screen editing with debounced live preview, built-in enterprise presets, sub-millisecond latency tracking, zoom controls, and instant PDF/SVG downloads.
 
 <p align="center">
+  <img src="docs/images/paperengine_demo.gif" alt="PaperEngine Live Preview Web Studio Demo" width="920" style="border-radius: 8px; border: 1px solid #1e293b;" />
+</p>
+
+### Financial Reports with Vector Charts
+
+<p align="center">
   <img src="docs/images/studio_financial_report.png?raw=true" alt="PaperEngine Studio Live Preview - Financial Report with Vector Charts" width="920" style="border-radius: 8px; border: 1px solid #1e293b;" />
 </p>
 

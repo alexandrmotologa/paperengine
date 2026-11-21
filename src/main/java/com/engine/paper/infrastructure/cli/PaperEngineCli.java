@@ -27,7 +27,6 @@ import java.util.concurrent.*;
  */
 @Command(
         name = "paperengine",
-        mixinStandardHelpOptions = true,
         version = "PaperEngine 1.0.0 (Java 21 LTS)",
         description = "Chromium-Free High-Speed PDF and Vector Report Engine",
         subcommands = {
@@ -35,10 +34,19 @@ import java.util.concurrent.*;
                 PaperEngineCli.ServeCommand.class,
                 PaperEngineCli.InitCommand.class,
                 PaperEngineCli.MergeCommand.class,
-                PaperEngineCli.BenchmarkCommand.class
+                PaperEngineCli.BenchmarkCommand.class,
+                PaperEngineCli.VersionCommand.class
         }
 )
 public class PaperEngineCli implements Callable<Integer> {
+
+    public static final String VERSION = "1.0.0";
+
+    @Option(names = {"-h", "--help"}, usageHelp = true, description = "Show this help message and exit.")
+    private boolean helpRequested;
+
+    @Option(names = {"-v", "-V", "--version"}, versionHelp = true, description = "Print version information and exit.")
+    private boolean versionRequested;
 
     @Override
     public Integer call() {
@@ -289,6 +297,15 @@ public class PaperEngineCli implements Callable<Integer> {
             System.out.printf("Active Heap Memory:  %d MB%n", memoryMb);
             System.out.println("=================================================");
 
+            return 0;
+        }
+    }
+
+    @Command(name = "version", description = "Print version information and exit")
+    public static class VersionCommand implements Callable<Integer> {
+        @Override
+        public Integer call() {
+            System.out.println("PaperEngine " + VERSION + " (Java 21 LTS)");
             return 0;
         }
     }

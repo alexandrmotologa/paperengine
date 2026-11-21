@@ -141,4 +141,20 @@ public class PaperEngineServerTest {
         assertThat(response.headers().firstValue("Content-Type").orElse("")).contains("text/html");
         assertThat(response.body()).contains("PaperEngine Studio");
     }
+
+    @Test
+    @DisplayName("GET /api/v1/version returns 200 OK with version payload")
+    void versionEndpointCheck() throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:" + PORT + "/api/v1/version"))
+                .GET()
+                .build();
+
+        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.headers().firstValue("Content-Type").orElse("")).contains("application/json");
+        assertThat(response.body()).contains("\"version\":\"1.0.0\"");
+        assertThat(response.body()).contains("\"engine\":\"PaperEngine\"");
+    }
 }

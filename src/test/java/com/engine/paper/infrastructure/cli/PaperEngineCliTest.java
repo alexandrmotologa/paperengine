@@ -67,4 +67,20 @@ public class PaperEngineCliTest {
         int exitCode = new CommandLine(new PaperEngineCli()).execute("--help");
         assertThat(exitCode).isEqualTo(0);
     }
+
+    @Test
+    @DisplayName("CLI version flags and command return 0")
+    void cliDisplaysVersion() {
+        int exitCodeLong = new CommandLine(new PaperEngineCli()).execute("--version");
+        assertThat(exitCodeLong).isEqualTo(0);
+
+        int exitCodeShort = new CommandLine(new PaperEngineCli()).execute("-v");
+        assertThat(exitCodeShort).isEqualTo(0);
+
+        int exitCodeUpper = new CommandLine(new PaperEngineCli()).execute("-V");
+        assertThat(exitCodeUpper).isEqualTo(0);
+
+        int exitCodeCmd = new CommandLine(new PaperEngineCli()).execute("version");
+        assertThat(exitCodeCmd).isEqualTo(0);
+    }
 }

@@ -40,6 +40,7 @@ public class PaperEngineServer {
         server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
 
         server.createContext("/api/v1/render", this::handleRender);
+        server.createContext("/api/v1/version", this::handleVersion);
         server.createContext("/studio", this::handleStudio);
         server.createContext("/health", this::handleHealth);
         server.createContext("/metrics", this::handleMetrics);
@@ -101,6 +102,11 @@ public class PaperEngineServer {
 
     private void handleHealth(HttpExchange exchange) throws IOException {
         String json = "{\"status\":\"UP\",\"engine\":\"PaperEngine\",\"runtime\":\"Java 21 Virtual Threads\"}";
+        sendResponse(exchange, 200, json, "application/json");
+    }
+
+    private void handleVersion(HttpExchange exchange) throws IOException {
+        String json = "{\"version\":\"" + com.engine.paper.infrastructure.cli.PaperEngineCli.VERSION + "\",\"engine\":\"PaperEngine\",\"runtime\":\"Java 21 LTS\"}";
         sendResponse(exchange, 200, json, "application/json");
     }
 
